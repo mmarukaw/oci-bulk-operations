@@ -1,0 +1,41 @@
+#############################################
+[DEFAULT]
+# Specify your OCICLI config file (No quotation required)
+oci_config_file = ~/.oci/config
+
+# Set OCICLI profile name. Note that oci_config_profile can be different to the profile of this script.
+oci_config_profile = <yourprofilename>
+
+# Set True if using instance principal signing
+use_instance_principal = True  # True or False
+
+#############################################
+# Use this profile name with --profile parameter
+#############################################
+[sample-profile-1]
+# Set top level compartment OCID. Tenancy OCID will be set if null.
+target_compartment_ids = ["ocid1.compartment.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ocid1.compartment.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+
+# List compartment names to exclude
+excluded_compartment_names = ["compartment1",
+    "compartment2",
+    "compartment3"]
+
+# List target regions. All regions will be counted if null.
+target_region_names = ["ap-tokyo-1","ap-osaka-1"]
+
+#############################################
+# Use this profile name with --profile parameter
+#############################################
+[sample-profile-2]
+# Set top level compartment OCID. Tenancy OCID will be set if null.
+target_compartment_ids = []
+
+# List compartment names to exclude
+excluded_compartment_names = []
+
+# List target regions. All regions will be counted if null.
+target_region_names = []
+
+#############################################
