@@ -31,26 +31,41 @@ class TargetResources:
                                  self.dispname_keys,
                                  self.parentid_keys,
                                  self.filter_logics)):
+            #print("---------------------")
+            #print("resource loop count {}".format(i))
+            #print("resource name {}".format(resname))
+            #print(all_targets[i])
+
             if i == len(self.resource_names) - 1:
                 print("\nListing all {}... (* is marked for {})".format(resname, self.action))
             targets = []
             for parent in all_targets[i]:
                 kwargs = {}
-
+                #print("--parent--")
+                #print(parent)
                 if i == 0:
                     kwargs['compartment_id'] = parent.id
                 else:
+                    # もし呼び出すメソッドのパラメータに compartment_id が存在すれば、親リソースの compartment_id をセットする
                     if signature(method).parameters.get('compartment_id'):
                         kwargs['compartment_id'] = parent.compartment_id
 
-                    if hasattr(parent, 'id'):
-                        kwargs[pidkey] = getattr(parent, 'id')
-                    elif hasattr(parent, 'name'):
-                        kwargs[pidkey] = getattr(parent, 'name')
-                    else:
-                        print("no id nor name attribute found in target")
+                    # もし呼び出すメソッドのパラメータに availability_domain が存在すれば、親リソースの name をセットする
+                    if signature(method).parameters.get('availability_domain'):
+                        kwargs['availability_domain'] = parent.name
 
+                    # もし呼び出すメソッドに pidkey と一致するパラメータが存在すれば、親リソースの id または name をセットする
+                    if signature(method).parameters.get(pidkey):
+                        if hasattr(parent, 'id'):
+                            kwargs[pidkey] = getattr(parent, 'id')
+                        elif hasattr(parent, 'name'):
+                            kwargs[pidkey] = getattr(parent, 'name')
+                        else:
+                            print("no id nor name attribute found in target")
+                
                 if args is not None: kwargs.update(args)
+                #print("--kwargs--")
+                #print(kwargs)
 
                 for listed_resource in list_resources(method, **kwargs):
                     for k, v in kwargs.items():
@@ -71,7 +86,10 @@ class TargetResources:
                     if i == len(self.resource_names) - 1:
                         print(msg)
 
-                all_targets.append(targets)
+            #print("--targets--")
+            #print(targets)
+
+            all_targets.append(targets)
         return all_targets[-1]
 
     def is_nightlystop_tagged(self, resource):
@@ -167,7 +185,11 @@ def resource_action(method, resource, **kwargs):
         response = method(resource.namespace_name, resource.bucket_name, resource.name, **kwargs)
     elif method.__name__ == "delete_bucket":
         response = method(resource.namespace_name, resource.name, **kwargs)
-    else:
+    elif method.__name__ == "delete_topic":
+        response = method(resource.topic_id, **kwargs)
+    elif hasattr(resource, 'id'):
         response = method(resource.id, **kwargs)
+    else:
+        print("ERROR : No id specified for action")
     return response.data
 

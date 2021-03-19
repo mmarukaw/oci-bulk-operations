@@ -68,15 +68,19 @@ def purge_images(config, signer, compartments):
     target.action_args     = {}
 
     def filter_logic(resource):
-        if (resource.lifecycle_state not in ['DELETING', 'DELETED']):
-        #if (resource.lifecycle_state not in ['DELETING', 'DELETED']) and (resource.launch_mode == 'CUSTOM'):
+        #if (resource.lifecycle_state not in ['DELETING', 'DELETED']):
+        if (resource.lifecycle_state not in ['DELETING', 'DELETED']) and \
+           not (resource.display_name.startswith(('Windows-Server-',
+                                                  'Oracle-Linux-',
+                                                  'Oracle-Autonomous-Linux-',
+                                                  'CentOS-',
+                                                  'Canonical-Ubuntu-'))):
             return True
         else:
             return False
 
     target.filter_logics   = [filter_logic]
     target_resources = target.list(compartments)
-    print(target_resources)
     target.commit_action(target_resources)
     target.wait_completion(target_resources)
 

@@ -27,6 +27,16 @@ def list_target_regions(config, signer, target_region_names):
     for region in all_regions:
         if (not target_region_names) or (region.region_name in target_region_names):
             target_regions.append(region)
+        if region.is_home_region:
+            home_region = region.region_name
+    return target_regions, home_region
+
+
+def get_home_region(config, signer):
+    regions = identity(config, signer=signer).list_region_subscriptions(config['tenancy']).data
+    for region in regions:
+        if (not target_region_names) or (region.region_name in target_region_names):
+            target_regions.append(region)
     return target_regions
 
 
