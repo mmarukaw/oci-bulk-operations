@@ -58,11 +58,6 @@ for region in regions:
     config["region"] = region.region_name
 
     if region.region_name == home_region:
-        ###Web Application Firewall###
-        waas.purge_address_lists(config, signer, compartments)
-        waas.purge_certificates(config, signer, compartments)
-        waas.purge_custom_protection_rules(config, signer, compartments)
-        waas.purge_waas_policies(config, signer, compartments)
 
         ###IAM###
         identity.purge_policies(config, signer, compartments)

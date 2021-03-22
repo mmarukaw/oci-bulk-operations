@@ -6,7 +6,7 @@ import inspect
 from inspect import signature
 
 check_interval = 10
-timeout        = 1800
+timeout        = 18000000
 
 class TargetResources:
     def __init__(self):
