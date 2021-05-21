@@ -163,4 +163,4 @@ for region in regions:
         identity.purge_policies(config, signer, compartments)
         identity.purge_compartments(config, signer, compartments)
 
-print ("\n========================[ Completed ]========================")
+print ("\n=====================[ Script Completed ]=====================")
