@@ -23,7 +23,9 @@ class TargetResources:
         self.action_args     = {}
 
     def list(self, compartments):
-        all_targets =[compartments]
+        all_targets =[compartments]  # all_targets:処理対象のリソースを入れる器
+
+        # リスト化されている resource_names などのインスタンスパラメーターの分だけループさせて、処理対象リソースを抽出する
         for i, (resname, method, args, dnamekey, pidkey, flogic) \
                 in enumerate(zip(self.resource_names,
                                  self.list_methods,
@@ -40,11 +42,15 @@ class TargetResources:
                 print("\nListing all {}... (* is marked for {})".format(resname, self.action))
             targets = []
             for parent in all_targets[i]:
-                kwargs = {}
                 #print("--parent--")
                 #print(parent)
+                kwargs = {}  # kwargs:listメソッドで使う抽出条件
+
+                # 第1ループのリソースのターゲットは必ずコンパートメントになるので、compartment_idに親(コンパートメント)のIDを条件(kwargs)にセットする
                 if i == 0:
                     kwargs['compartment_id'] = parent.id
+                
+                # 第2ループ以降のリソースは、リソースによりキーが異なるため、それらを条件に応じて抽出条件(kwargs)にセットする
                 else:
                     # もし呼び出すメソッドのパラメータに compartment_id が存在すれば、親リソースの compartment_id をセットする
                     if signature(method).parameters.get('compartment_id'):
@@ -63,16 +69,20 @@ class TargetResources:
                         else:
                             print("no id nor name attribute found in target")
                 
+                # もし追加で必要なパラメータが渡されていたら、それをkwargsに追加する
                 if args is not None: kwargs.update(args)
                 #print("--kwargs--")
                 #print(kwargs)
 
+                # list_resources をコールする
                 for listed_resource in list_resources(method, **kwargs):
+                    # APIによってはコール時に使用した抽出パラメータ(kwargs)が戻り値に存在しない場合があるので、戻った結果list_resourceの中に入れてしまう
                     for k, v in kwargs.items():
                         setattr(listed_resource, k, v)
 
                     msg = "    found " + getattr(listed_resource, dnamekey)
 
+                    # フィルター用のロジック(flogic)が指定されている場合はそれを適用して処理対象かどうかを判定する
                     if flogic(listed_resource):
                         targets.append(listed_resource)
                         msg = msg + "(*)"
@@ -92,6 +102,7 @@ class TargetResources:
             all_targets.append(targets)
         return all_targets[-1]
 
+    # 多分未使用(古いロジック) 確認して消去
     def is_nightlystop_tagged(self, resource):
         go = False
         if ('control' in resource.defined_tags) and ('nightly_stop' in resource.defined_tags['control']):
@@ -113,10 +124,13 @@ class TargetResources:
                 try:
                     resource_action(self.action_method, resource, **self.action_args)
                 except oci.exceptions.ServiceError as e:
+                    # もしHTTP429 TooManyRequests が返ってきたら、60秒待って再実行する
                     if e.status == 429:
                         print("--->Info - Status 429 has returned.  The API seems to be throttled.  Will wait 60 seconds then retry...")
                         time.sleep(60)
                         pass
+
+                    # その他のエラーの場合はメッセージを出力してそのリソースはスキップする
                     else:
                         print("--->ERROR - Action failed: {}".format(e))
                         action_list.pop(i)
@@ -160,6 +174,7 @@ class TargetResources:
             count += 1
             time.sleep(check_interval)
 
+# リソースのlist用のプライベート関数、methodに呼び出したいOCIリソースのlist関数を、kwargsに必要なパラメータを入れてコールする
 def list_resources(method, **kwargs):
     response = oci.pagination.list_call_get_all_results(
         method,
@@ -170,10 +185,12 @@ def list_resources(method, **kwargs):
     else:
         return response.data
 
+# リソースのget用のプライベート関数、methodに呼び出したいOCIリソースのget関数を、resource_idにIDを、kwargsに必要なパラメータを入れてコールする
 def get_resource(method, resource_id, **kwargs):
     response = method(resource_id, **kwargs)
     return response.data
 
+# リソースの処理実行用のプライベート関数、methodに呼び出したいOCIリソースの関数を、resource_idにIDを、kwargsに必要なパラメータを入れてコールする
 def resource_action(method, resource, **kwargs):
     if method.__name__ == "delete_preauthenticated_request":
         response = method(resource.namespace_name, resource.bucket_name, resource.id, **kwargs)

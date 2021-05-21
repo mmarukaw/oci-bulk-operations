@@ -26,9 +26,12 @@ def list_target_regions(config, signer, target_region_names):
     target_regions=[]
     for region in all_regions:
         if (not target_region_names) or (region.region_name in target_region_names):
-            target_regions.append(region)
-        if region.is_home_region:
-            home_region = region.region_name
+            if region.is_home_region:
+                home_region = region.region_name
+                target_regions.append(region)
+            else:
+                target_regions.insert(0, region)
+
     return target_regions, home_region
 
 

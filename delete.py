@@ -56,10 +56,11 @@ for region in regions:
     print ("\n============[ {} ]================".format(region.region_name))
 
     config["region"] = region.region_name
-
+    
     ###Database###
     database.purge_autonomous_dbs(config, signer, compartments)
     database.purge_db_systems(config, signer, compartments)
+    database.purge_db_backups(config, signer, compartments)
 
     ###Load Balancer###
     load_balancer.purge_load_balancers(config, signer, compartments)
@@ -117,6 +118,36 @@ for region in regions:
     virtual_network.purge_cpes(config, signer, compartments)
     virtual_network.purge_public_ips(config, signer, compartments)
 
+    ###Streaming###
+    streaming.purge_streams(config, signer, compartments)
+    streaming.purge_stream_pools(config, signer, compartments)
+
+    ###Notification###
+    ons.purge_subscriptions(config, signer, compartments)
+    ons.purge_topics(config, signer, compartments)
+
+    ###Logging###
+    logging.purge_log_groups(config, signer, compartments)
+
+    ###Events###
+    events.purge_rules(config, signer, compartments)
+
+    ###Healthcheck###
+    healthcheck.purge_http_monitors(config, signer, compartments, region.region_name)
+    healthcheck.purge_ping_monitors(config, signer, compartments, region.region_name)
+
+    ###API Gateway###
+    api_gateway.purge_deployments(config, signer, compartments)
+    api_gateway.purge_gateways(config, signer, compartments)
+
+    ###Resource Manager###
+    resource_manager.purge_configuration_source_providers(config, signer, compartments)
+    resource_manager.purge_stacks(config, signer, compartments)
+    #resource_manager.purge_templates(config, signer, compartments)
+
+    ###Data Science###
+    data_science.purge_projects(config, signer, compartments)
+
     if region.region_name == home_region:
 
         ###Web Application Firewall###
@@ -124,6 +155,9 @@ for region in regions:
         waas.purge_certificates(config, signer, compartments)
         waas.purge_custom_protection_rules(config, signer, compartments)
         waas.purge_waas_policies(config, signer, compartments)
+
+        ###DNS###
+        dns.purge_dns_zones(config, signer, compartments)
 
         ###IAM###
         identity.purge_policies(config, signer, compartments)

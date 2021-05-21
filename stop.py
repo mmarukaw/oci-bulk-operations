@@ -59,7 +59,7 @@ for region in regions:
 
     database.change_autonomous_db_licenses(config, signer, compartments)
     compute.stop_compute_instances(config, signer, compartments)
-    database.stop_db_systems(config, signer, compartments)
+    #database.stop_db_systems(config, signer, compartments)
     database.stop_autonomous_dbs(config, signer, compartments)
 
 print ("\n========================[ Completed ]========================")
