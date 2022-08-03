@@ -3,6 +3,31 @@ from modules.common import *
 
 client = oci.core.VirtualNetworkClient
 
+def list_drgs(config, signer, compartments):
+    target = TargetResources()
+    target.resource_names  = ['DRGs']
+    target.action          = 'TERMINATE'
+    target.target_state    = 'TERMINATED'
+    target.state_in_action = 'TERMINATING'
+    target.list_methods    = [client(config, signer=signer).list_drgs]
+    target.list_args       = [None]
+    target.dispname_keys   = ['display_name']
+    target.parentid_keys   = [None]
+    target.get_method      = client(config, signer=signer).get_drg
+    target.action_method   = client(config, signer=signer).delete_drg
+    target.action_args     = {}
+
+    def filter_logic(resource):
+        if (resource.lifecycle_state not in ['TERMINATING', 'TERMINATED']):
+            return True
+        else:
+            return False
+
+    target.filter_logics   = [filter_logic]
+    target_resources = target.list(compartments)
+    # target.commit_action(target_resources)
+    # target.wait_completion(target_resources)
+
 def clear_route_rules(config, signer, compartments):
     #details = oci.core.models.UpdateRouteTableDetails()
     #details.route_rules = []
